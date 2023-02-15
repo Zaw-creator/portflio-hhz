@@ -12,6 +12,9 @@
     margin: 0%;
     box-sizing: border-box;
 }
+.color{
+    color: #035aa6;
+}
 ::-webkit-scrollbar{
     width: 4px;
     color:#035aa6;
@@ -391,7 +394,7 @@ body{
 #breaker{
     height: 100vh;
     width: 200%;
-    background-color: #035aa6;
+    background-color: #000000;
     opacity: 1;
     animation: breakeranimate 2s linear;
     display: none;
@@ -705,7 +708,7 @@ body{
     font-family: poppins;
     justify-content: center;
     transition: all .4s ease;
-    width:90%;
+    width:80%;
     border-radius: 10px;
     background: #035aa6;
 }
@@ -718,7 +721,7 @@ body{
     align-items: center;
     justify-content: center;
     transition: all .4s ease;
-    width:83%;
+    width:87%;
     border-radius: 10px;
     background: #035aa6;
 }
@@ -744,7 +747,7 @@ body{
     align-items: center;
     justify-content: center;
     transition: all .4s ease;
-    width:94%;
+    width:84%;
     border-radius: 10px;
     background: #035aa6;
 }
@@ -756,7 +759,7 @@ body{
     display: flex;
     align-items: center;
     justify-content: center;
-    width:84%;
+    width:85%;
     border-radius: 10px;
     transition: all .4s ease;
     background: #035aa6;
