@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Portfolio</title>
+  <style>
+    #song-info {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    #song-name {
+      margin: 0;
+    }
+    
+    #artist-name {
+      margin: 0;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="song-info">
+    <p id="song-name"></p>
+    <p id="artist-name"></p>
+  </div>
+
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script>
+    // Replace YOUR_ACCESS_TOKEN with your actual access token
+    const accessToken = 'YOUR_ACCESS_TOKEN';
+
+    // Initialize the Spotify Web Playback SDK
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new Spotify.Player({
+        name: 'My Portfolio',
+        getOAuthToken: cb => { cb(accessToken); }
+      });
+
+      // Connect to the player
+      player.connect();
+
+      // When the player is ready
+      player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+      });
+
+      // When the song changes
+      player.addListener('player_state_changed', state => {
+        if (!state) {
+          console.error('No song playing');
+          return;
+        }
+
+        const { name, artists } = state.track_window.current_track;
+        const artistNames = artists.map(artist => artist.name).join(', ');
+
+        // Update the song info on the page
+        document.getElementById('song-name').textContent = name;
+        document.getElementById('artist-name').textContent = artistNames;
+      });
+    };
+  </script>
+</body>
+</html>
