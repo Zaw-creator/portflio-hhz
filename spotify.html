@@ -1,66 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
   <title>My Portfolio</title>
   <style>
-    #song-info {
-      font-size: 16px;
+    #song-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    #song-name, #artist-name {
       font-weight: bold;
-      margin-bottom: 10px;
+      font-size: 24px;
+      text-align: center;
     }
-    
-    #song-name {
-      margin: 0;
-    }
-    
-    #artist-name {
-      margin: 0;
-      color: #888;
+
+    #album-art {
+      width: 200px;
+      height: 200px;
+      margin-top: 10px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
     }
   </style>
 </head>
 <body>
-  <div id="song-info">
+  <div id="song-container">
+    <h2>Currently Playing:</h2>
     <p id="song-name"></p>
     <p id="artist-name"></p>
+    <p id="album-art"></p>
   </div>
 
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script>
-    // Replace YOUR_ACCESS_TOKEN with your actual access token
-    const accessToken = 'YOUR_ACCESS_TOKEN';
+    const songName = document.getElementById("song-name");
+    const artistName = document.getElementById("artist-name");
+    const albumArt = document.getElementById("album-art");
 
-    // Initialize the Spotify Web Playback SDK
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      const player = new Spotify.Player({
-        name: 'My Portfolio',
-        getOAuthToken: cb => { cb(accessToken); }
-      });
+     const accessToken = "BQCDCYhepqB_TUTXwdQyKomHeTUlz1yGGwueLQmyfkG5TMg2nCXxX492CZoQV0GLf03YRje3ZwEERn7CCRfFPifQVBRUrJu31gLzQsXau8915q7HCtw-_XB26OhQAhcoq_4Ax9ijOJbguq4nJWfXM3HJ9BZHGnopKSbaALIR7RoHzd2q4cOb-U5XjbSXP5JxMxs9ibvfPQ";
 
-      // Connect to the player
-      player.connect();
-
-      // When the player is ready
-      player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
-      });
-
-      // When the song changes
-      player.addListener('player_state_changed', state => {
-        if (!state) {
-          console.error('No song playing');
-          return;
-        }
-
-        const { name, artists } = state.track_window.current_track;
-        const artistNames = artists.map(artist => artist.name).join(', ');
-
-        // Update the song info on the page
-        document.getElementById('song-name').textContent = name;
-        document.getElementById('artist-name').textContent = artistNames;
-      });
-    };
+    fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+      headers: {
+        "Authorization": `Bearer ${accessToken}`
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Update the song name, artist name, and album art
+      songName.innerText = data.item.name;
+      artistName.innerText = data.item.artists[0].name;
+      albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
+    })
+    .catch(error => console.log(error));
   </script>
 </body>
 </html>
