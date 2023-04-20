@@ -3,6 +3,23 @@
 <head>
   <title>My Portfolio</title>
   <style>
+    /* Spotify Theme */
+    body {
+      background-color: #191414;
+      color: #FFFFFF;
+    }
+    
+    h2 {
+      font-size: 32px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    
+    p {
+      font-size: 24px;
+      margin: 0;
+    }
+    
     #song-container {
       display: flex;
       flex-direction: column;
@@ -12,14 +29,15 @@
 
     #song-name, #artist-name {
       font-weight: bold;
-      font-size: 24px;
+      font-size: 36px;
       text-align: center;
+      margin-top: 20px;
     }
 
     #album-art {
-      width: 200px;
-      height: 200px;
-      margin-top: 10px;
+      width: 300px;
+      height: 300px;
+      margin-top: 20px;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -28,7 +46,7 @@
 </head>
 <body>
   <div id="song-container">
-    <h2>Currently Playing:</h2>
+    <h2>Currently Listening:</h2>
     <p id="song-name"></p>
     <p id="artist-name"></p>
     <p id="album-art"></p>
@@ -39,21 +57,51 @@
     const artistName = document.getElementById("artist-name");
     const albumArt = document.getElementById("album-art");
 
-     const accessToken = "BQCDCYhepqB_TUTXwdQyKomHeTUlz1yGGwueLQmyfkG5TMg2nCXxX492CZoQV0GLf03YRje3ZwEERn7CCRfFPifQVBRUrJu31gLzQsXau8915q7HCtw-_XB26OhQAhcoq_4Ax9ijOJbguq4nJWfXM3HJ9BZHGnopKSbaALIR7RoHzd2q4cOb-U5XjbSXP5JxMxs9ibvfPQ";
+    const clientId = "e1ba04a31af749c58b9274866129d60c";
+    const clientSecret = "194eabe701774459a7b79ca19d127b8d";
+    const refreshToken = "AQAOFZCR6u3TlBfyVwAWADWHdVBcf9pdflxONLAJt7kRhh-vQnoQWZRdXXgqghs5D6W-Xr8MkLHTU__VgL6op-jXWCkKxAThvYXVzDHti1Tg0i3b1dM4FlqRDrvwetGGz8Y";
 
-    fetch("https://api.spotify.com/v1/me/player/currently-playing", {
-      headers: {
-        "Authorization": `Bearer ${accessToken}`
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      // Update the song name, artist name, and album art
-      songName.innerText = data.item.name;
-      artistName.innerText = data.item.artists[0].name;
-      albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
-    })
-    .catch(error => console.log(error));
+    const scopes = 'user-read-currently-playing user-read-playback-state';
+
+    let accessToken;
+
+    function refreshAccessToken() {
+      fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=refresh_token&refresh_token=' + refreshToken
+      })
+      .then(response => response.json())
+      .then(data => {
+        accessToken = data.access_token;
+        setTimeout(refreshAccessToken, (data.expires_in - 60) * 1000);
+        // Refresh the access token again when it's about to expire (minus 60 seconds to account for network latency)
+      })
+      .catch(error => console.error(error));
+    }
+
+    refreshAccessToken(); // Call the function once to start refreshing the access token
+
+    function updateCurrentlyPlaying() {
+      fetch("https://api.spotify.com/v1/me/player/currently-playing?market=US", {
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Update the song name, artist name, and album art
+        songName.innerText = data.item.name;
+        artistName.innerText = data.item.artists[0].name;
+        albumArt.style.backgroundImage = `url(${data.item.album.images[0].url})`;
+      })
+      .catch(error => console.error(error));
+    }
+
+    setInterval(updateCurrentlyPlaying, 5000); // Call the function every 5 seconds to update the currently playing song
   </script>
 </body>
 </html>
