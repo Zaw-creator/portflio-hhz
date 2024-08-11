@@ -1,36 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="images/thumbnail.gif">
-  <!--favicon-img-->
-  <!--main css file should not be removed -->
   <link rel="stylesheet" href="css/index.css">
-  <!--main css file-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.2.6/gsap.min.js"></script>
   <title>My Portfolio</title>
   <style>
-    /* Spotify Theme */
     body {
-      background-color: #191414;
+      background-color: #000000;
       color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     
     h2 {
       font-size: 32px;
       margin: 0;
       text-transform: uppercase;
+      text-align: center;
     }
     
     p {
       font-size: 24px;
       margin: 0;
+      text-align: center;
     }
     
     #song-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 20px;
+      padding: 20px;
+      max-width: 100%;
+      box-sizing: border-box;
+      text-align: center;
     }
 
     #song-name, #artist-name {
@@ -38,15 +50,17 @@
       font-size: 36px;
       text-align: center;
       margin-top: 20px;
+      word-wrap: break-word;
     }
 
     #album-art {
       width: 300px;
       height: 300px;
       margin-top: 20px;
-      background-size: contain;
+      background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
+      border-radius: 10px;
     }
 
     .hidden {
@@ -58,11 +72,28 @@
       margin-top: 20px;
       text-align: center;
     }
+
+    /* Loading Spinner */
+    #loading {
+      border: 8px solid #f3f3f3; /* Light grey */
+      border-top: 8px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-top: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <div id="song-container">
     <h2>Currently Listening:</h2>
+    <div id="loading"></div>
     <p id="no-song" class="hidden">Not currently listening to any song</p>
     <p id="song-name" class="hidden"></p>
     <p id="artist-name" class="hidden"></p>
@@ -74,12 +105,14 @@
     const artistName = document.getElementById("artist-name");
     const albumArt = document.getElementById("album-art");
     const noSong = document.getElementById("no-song");
+    const loading = document.getElementById("loading");
 
     const clientId = "e1ba04a31af749c58b9274866129d60c";
     const clientSecret = "194eabe701774459a7b79ca19d127b8d";
     const refreshToken = "AQAOFZCR6u3TlBfyVwAWADWHdVBcf9pdflxONLAJt7kRhh-vQnoQWZRdXXgqghs5D6W-Xr8MkLHTU__VgL6op-jXWCkKxAThvYXVzDHti1Tg0i3b1dM4FlqRDrvwetGGz8Y";
 
     let accessToken;
+    let isInitialLoad = true;
 
     function refreshAccessToken() {
       fetch('https://accounts.spotify.com/api/token', {
@@ -101,6 +134,10 @@
     refreshAccessToken();
 
     function updateCurrentlyPlaying() {
+      if (isInitialLoad) {
+        showLoading();
+      }
+
       fetch("https://api.spotify.com/v1/me/player/currently-playing?market=US", {
         headers: {
           "Authorization": `Bearer ${accessToken}`
@@ -108,7 +145,6 @@
       })
       .then(response => {
         if (response.status === 204 || response.status === 200 && !response.ok) {
-          // No content or something went wrong, meaning no song is playing
           showNoSong();
           return null;
         } else {
@@ -117,11 +153,13 @@
       })
       .then(data => {
         if (data && data.is_playing) {
-          // A song is playing
           showCurrentSong(data);
         } else {
           showNoSong();
         }
+
+        // Stop showing the loading spinner after the first fetch
+        isInitialLoad = false;
       })
       .catch(error => {
         console.error("Error fetching currently playing song:", error);
@@ -129,7 +167,16 @@
       });
     }
 
+    function showLoading() {
+      loading.classList.remove('hidden');
+      songName.classList.add('hidden');
+      artistName.classList.add('hidden');
+      albumArt.classList.add('hidden');
+      noSong.classList.add('hidden');
+    }
+
     function showNoSong() {
+      loading.classList.add('hidden');
       songName.classList.add('hidden');
       artistName.classList.add('hidden');
       albumArt.classList.add('hidden');
@@ -137,6 +184,7 @@
     }
 
     function showCurrentSong(data) {
+      loading.classList.add('hidden');
       noSong.classList.add('hidden');
       songName.classList.remove('hidden');
       artistName.classList.remove('hidden');
@@ -148,6 +196,9 @@
     }
 
     setInterval(updateCurrentlyPlaying, 5000);
+
+    // Initial call to load data
+    updateCurrentlyPlaying();
   </script>
 </body>
 </html>
